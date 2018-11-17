@@ -1,6 +1,7 @@
 require_relative 'advice'
+require 'pry'
 
-class HelloWorld
+class App
   def call(env)
     case env['REQUEST_PATH']
     when '/'
@@ -10,21 +11,24 @@ class HelloWorld
       [
         '200',
         {"Content-Type" => 'text/html'},
-        ["<html><body><b><em>#{piece_of_advice}</em></b></body></html>"]
+        [erb(:advice, message: piece_of_advice)]
       ]
     else
       [
         '404',
-        {"Content-Type" => 'text/html', "Content-Length" => '48'},
-        ["<html><body><h4>404 Not Found</h4></body></html>"]
+        {"Content-Type" => 'text/html', "Content-Length" => '62'},
+        [erb(:not_found)]
       ]
     end
   end
 
   private
 
-  def erb(filename)
+  def erb(filename, local = {})
+    b = binding
+    message = local[:message]
     content = File.read("views/#{filename}.erb")
-    ERB.new(content).result
+    ERB.new(content).result(b)
   end
 end
+
