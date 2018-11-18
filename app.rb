@@ -1,7 +1,10 @@
 require_relative 'advice'
 require 'pry'
 
-class App
+require_relative 'monroe'
+require_relative 'advice'
+
+class App < Monroe
   def call(env)
     case env['REQUEST_PATH']
     when '/'
@@ -11,9 +14,9 @@ class App
         erb :index
       end
     when '/advice'
-      piece_of_advice = Advice.new.generate
       status = '200'
       headers = {"Content-Type" => 'text/html'}
+      piece_of_advice = Advice.new.generate
       response(status, headers) do
         erb :advice, message: piece_of_advice
       end
@@ -24,20 +27,6 @@ class App
         erb :not_found
       end
     end
-  end
-
-  private
-
-  def erb(filename, local = {})
-    b = binding
-    message = local[:message]
-    content = File.read("views/#{filename}.erb")
-    ERB.new(content).result(b)
-  end
-
-  def response(status, headers, body = '')
-    body = yield if block_given?
-    [status, headers, [body]]
   end
 end
 
